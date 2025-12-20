@@ -159,51 +159,161 @@
 ## 3) Technical Standards (MUST)
 
 ### 3.1 Architecture (simple & testable)
-- Tách tối thiểu 3 lớp:
+- Layered-first feature Architecture: Code phải được tổ chức theo tính năng (feature), trong mỗi feature chia thành 3 lớp:
   - **Presentation**: UI + State (Cubit/BLoC)
-  - **Domain**: Use-cases (logic nghiệp vụ)
-  - **Data**: Repository + Local DB
-- Quy tắc phụ thuộc: Presentation → Domain → Data (không ngược chiều)
-- Dependency injection bằng get_it.
+  - **Domain**: Entities (immutable), Use-cases, Repository interfaces
+  - **Data**: Chứa Repository Impl và Data Sources.
+- **Dependency Injection (DI)**: Sử dụng get_it làm Service Locator.
+  - Quy tắc phụ thuộc: Presentation → Domain → Data (không ngược chiều)
+  - Domain **không phụ thuộc Flutter** (pure Dart, không `BuildContext`, không `Material`, không `intl` UI)
+- **Repository interfaces** đặt ở Domain; implementations đặt ở Data.
+  - Mọi “decision” ảnh hưởng contract (fields, repository methods, navigation routes) phải được ghi trong `plan.md`.
+- SDD Enforcement:
+  - Sử dụng freezed để tạo ra các Immutable States (đúng tinh thần 1.2).
 
 ### 3.2 State Management
-  - Cubit/BLoC 
-  - Cubit cho màn hình đơn giản
+  - Primary Choice: flutter_bloc (ưu tiên Cubit cho sự đơn giản).
+  - SDD Enforcement:
+    - Sử dụng freezed để tạo ra các Immutable States
+    - Cubit MUST gọi Use-cases. Chỉ trường hợp trivial read-only mới được gọi Repository trực tiếp và phải ghi trong plan.md.
+    - Presentation chỉ orchestration UI: nhận input → gọi use-case → emit state. Không chứa business rules.
+    - Không dùng global mutable state để giữ danh sách transactions/categories (tuân thủ SSOT).
 
-### 3.3 Storage
+### 3.3 Storage (local-only)
 - **Database (MVP)**:
-- dùng shared_preferences cho lưu setting ex: language, dùng sqflite cho lưu categories, imcome / outcome
+- Settings: Sử dụng shared_preferences để lưu cấu hình nhẹ (ngôn ngữ).
+- Database (Core Data): Sử dụng **sqflite** phối hợp với Repository Pattern để đảm bảo tính Reactive.
+  - Repository phải trả về Stream<List<Entity>> cho các danh sách để thực hiện Reactive SSOT.
+  - Sử dụng StreamController trong Repository để phát tín hiệu (emit) khi dữ liệu thay đổi.
+  - Repository/DataSource phải có dispose() và được đóng khi app terminate (hoặc singleton lifecycle rõ).
+- Tables: categories, transactions
+    - Fields: id/name/type/iconKey/createdAt; transactionName/amount/categoryId/note/createdAt/dueDate
+- Mọi thay đổi về cấu trúc bảng trong sqflite phải đi kèm với việc cập nhật version database và script migration trong data layer.
 
-### 3.4 Localization
+- **Seeding categories (MUST)**:
+  - Seed chạy **1 lần** (khi DB chưa có category).
+  - Không tạo trùng lặp khi mở app lại.
+  - Seed phải tạo đủ 2 `type`: expense/income.
+
+### 3.4 Navigation
+- Dùng `go_router`
+- Routes tối thiểu:
+  - `/home`
+  - `/settings`
+  - `/add-transaction`
+  - `/settings/language`
+  - `/settings/categories`
+
+### 3.5 Localization
 - Dùng `flutter_localizations` + `intl` + ARB.
+- Currency Formatting: Sử dụng NumberFormat từ package intl để hiển thị tiền dựa trên languageCode.
+  - Rule: Lưu trữ là int, hiển thị mới format thành String.
+  - Parsing input: chỉ nhận digits, loại bỏ , . trước khi parse int; không lưu formatted string.
 - Khi đổi language: UI cập nhật ngay (rebuild app) và lưu lại lựa chọn.
 
-### 3.5 Code Quality
+### 3.6 Code Quality
 - Bắt buộc pass:
   - `dart format .`
   - `flutter analyze`
 - Naming rõ ràng, tránh abbreviations khó hiểu.
 - Mỗi file nên “vừa đủ”, ưu tiên chia nhỏ theo feature thay vì file khổng lồ.
+- Formatting: Chạy dart format . tự động trước khi commit code.
+- Folder Structure:
+lib/
+├── core/              # DI, Theme, Constants, Utils
+├── features/
+│   ├── home/          # UI, Cubit
+│   ├── transaction/   # UI, Cubit
+│   └── ...
+├── domain/            # Entities & Repository Interfaces
+└── data/              # Repositories Impl & DB Helpers
 
+- Rules: Entities (Domain) không chứa logic fromJSON/toJSON. Việc chuyển đổi dữ liệu từ Database/JSON được thực hiện bởi các Data Models (Data layer) thông qua Factory methods.
 ---
 
 ## 4) Testing Standards (MUST)
 
-### 4.1 Minimum Test Set (MVP)
-- **Unit tests (MUST)** cho Domain use-cases quan trọng:
-  - Add transaction
-  - List transactions sorted by createdAt desc
-  - CRUD category (ít nhất create/delete)
-  - Save/read language setting
-- **Widget tests (SHOULD)** cho 1–2 flow chính:
-  - Add transaction → Save → Home hiển thị item mới
-- Integration test: optional (nếu team có thời gian).
+> Mục tiêu: đảm bảo Implementation luôn “khớp Spec”, giảm regression, và enforce AC-Driven Verification.
 
-### 4.2 Definition of Done cho 1 task/PR
-- AC liên quan trong `spec.md` được cover (code + test hoặc lý do).
-- `flutter test` pass.
-- Không có warning từ analyzer.
-- Không thêm dependency “toàn năng” khi chưa cần.
+### 4.1 Test Pyramid (MVP)
+- Ưu tiên theo thứ tự:
+  1) **Unit tests (MUST)**: Domain (use-cases, entities, validators)
+  2) **Repository stream tests (MUST)**: đảm bảo Reactive SSOT (emit list mới sau write)
+  3) **Widget tests (SHOULD)**: kiểm chứng 1–2 flow chính end-to-end ở UI layer
+
+### 4.2 Tooling & Test Setup (MUST)
+- Packages khuyến nghị:
+  - `flutter_test` (mặc định)
+  - `mocktail` (mock interfaces)
+  - `bloc_test` (test Cubit/BLoC states)
+  - `sqflite_common_ffi` (test repository với SQLite thật trên CI/local)
+- Quy tắc test:
+  - Test phải **deterministic** (không phụ thuộc thời gian thực/locale thực/mạng)
+  - Không test UI pixel-perfect (không golden ở MVP) — tập trung behavior/logic
+  - Dữ liệu test phải “tự setup/teardown” (không dùng chung DB file với local dev)
+
+### 4.3 Minimum Test Set (MVP)
+
+#### A) Domain Unit Tests (MUST)
+Mỗi use-case quan trọng phải có unit test (mock repository interface):
+- **AddTransactionUseCase**
+  - amount > 0
+  - required fields (name/category)
+  - lưu đúng `Transaction.type` = `Category.type`
+- **WatchTransactionsUseCase / ListTransactionsUseCase**
+  - đảm bảo sort theo `createdAt` desc (mới nhất lên trước)
+  - group key theo ngày dựa trên `createdAt` (local time)
+- **CreateCategoryUseCase**
+  - name required + max length (≤ 20)
+  - type expense/income đúng theo tab
+- **WatchCategoriesUseCase**
+  - trả đúng list theo `type`
+- **LanguageSettingUseCases**
+  - save/read `languageCode` (EN/VI)
+- Nếu có validators (amount/name), phải có unit tests riêng.
+
+#### B) Repository Reactive SSOT Tests (MUST)
+Test với SQLite thật (sqflite_common_ffi) để bảo đảm contract “Action → Write DB → emit → UI rebuild”:
+- `watchCategories()`:
+  - subscribe stream → insert category → stream emit list mới (list lấy từ DB query)
+- `watchTransactions()`:
+  - subscribe stream → insert transaction → stream emit list mới đúng sort desc
+- Migration/DB version (nếu có onUpgrade):
+  - ít nhất 1 test sanity: open DB version N → upgrade → vẫn query được (MVP có thể tối giản)
+
+**Rules bắt buộc verify trong test**:
+- Stream là **broadcast** (nhiều listeners không crash)
+- Sau write: repository **re-query DB** và emit list mới (không emit từ cache biến tạm)
+
+#### C) Presentation State Tests (SHOULD)
+Dùng `bloc_test` cho các Cubit chính (mock use-cases):
+- HomeCubit: load/watch → emit state có list grouped
+- AddTransactionCubit: validate → saving → success/failure
+- CategoriesCubit: create category → list update
+- LanguageCubit: change language → state update
+
+#### D) Widget Tests (SHOULD)
+Tối thiểu 1–2 flow quan trọng:
+1) **Add Transaction → Save → Home hiển thị item mới**
+   - nhập name/amount, chọn category, nhấn TẠO
+   - quay lại Home thấy item mới xuất hiện (reactive)
+2) **Change Language → UI cập nhật**
+   - vào Settings → Language → chọn EN/VI → kiểm tra text/locale đổi (ở mức smoke)
+
+### 4.4 AC-Driven Verification (MUST)
+- Mỗi Acceptance Criteria quan trọng trong `spec.md` phải có “Verification method” và được track trong `tasks.md`:
+  - `UNIT` (domain/repo)
+  - `WIDGET` (UI flow)
+  - `MANUAL` (checklist)
+- Nếu một AC không cover bằng test (ví dụ UX nhỏ), bắt buộc có **manual checklist** rõ ràng trong tasks.md.
+
+### 4.5 Definition of Done cho 1 task/PR (MUST)
+- [ ] Update đúng luồng SDD: spec/plan/tasks (nếu có thay đổi behavior/contract)
+- [ ] Unit tests liên quan được bổ sung/updated và pass (`flutter test`)
+- [ ] Repo reactive tests pass (nếu có thay đổi data/repository)
+- [ ] `flutter analyze` sạch, `dart format .` chạy
+- [ ] Manual sanity check 4 màn hình (Home/Add/Categories/Settings) pass
+- [ ] Không thêm dependency “toàn năng” khi chưa cần (phải có rationale trong PR nếu thêm)
 
 ---
 
