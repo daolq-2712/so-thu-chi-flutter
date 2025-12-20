@@ -1,164 +1,253 @@
-<!--
-SYNC IMPACT REPORT - Constitution Update
-================================================================================
-Version Change: INITIAL → 1.0.0
-Change Type: MAJOR (Initial constitution ratification)
-Date: 2025-12-18
+# Sổ Thu Chi
 
-Principles Established:
-  ✓ I. Code Quality Standards (NEW)
-  ✓ II. Testing Standards (NEW)
-  ✓ III. User Experience Consistency (NEW)
-  ✓ IV. Performance Requirements (NEW)
-
-Sections Added:
-  ✓ Flutter Technology Stack
-  ✓ Development Workflow & Quality Gates
-
-Template Validation Status:
-  ✅ plan-template.md - Compatible (standard structure supports Flutter projects)
-  ✅ spec-template.md - Compatible (user story format aligns with UX principle)
-  ✅ tasks-template.md - Compatible (TDD approach aligns with testing principle)
-
-Follow-Up Actions:
-  - All templates validated and compatible with new constitution
-  - No template modifications required
-  - Ready for feature development following these principles
-
-================================================================================
--->
-
-# Sổ Thu Chi Constitution
-
-## Core Principles
-
-### I. Code Quality Standards
-
-**MUST Requirements**:
-- **Clean Architecture**: Separation of concerns across presentation (UI), business logic (BLoC/Cubit), and data layers (repositories, data sources)
-- **SOLID Principles**: Single responsibility per widget/class; dependency injection via constructor; prefer composition over inheritance
-- **Dart Best Practices**: Null-safety enforced; explicit typing for public APIs; const constructors where applicable; effective linting (flutter_lints)
-- **Code Organization**: Feature-based folder structure; maximum 300 lines per file; clear naming conventions (verb+noun for methods, noun for classes)
-- **Documentation**: Public APIs must have dartdoc comments; complex business logic requires inline explanations; README per feature module
-
-**Rationale**: Flutter apps grow complex quickly. Clean architecture prevents technical debt, ensures testability, and enables team scalability. Consistent code quality reduces bugs and accelerates feature development.
+**Purpose**: Tài liệu này là “luật chơi” (source of truth) cho dự án MVP app quản lý thu/chi (4 màn hình).  
+**Scope MVP**: Local-only (offline by default), không sync cloud, không analytics.  
+**Audience**: Flutter dev level Middle (~1 năm Flutter), mới dùng Spec Kit / SDD.  
+**Version**: 1.0.0 | **Ratified**: 2025-12-18
 
 ---
 
-### II. Testing Standards
+## 1) Core Principles (MUST)
 
-**MUST Requirements**:
-- **Test-First Development**: Write widget tests BEFORE implementing UI; write unit tests BEFORE implementing business logic
-- **Coverage Targets**: Minimum 80% code coverage for business logic (BLoC/Cubit); minimum 70% for data layer; critical user flows must have integration tests
-- **Test Categories**:
-  - **Unit Tests**: All BLoC states/events, repository methods, utility functions, validators
-  - **Widget Tests**: All screens and reusable widgets with user interaction scenarios
-  - **Integration Tests**: Critical user journeys (e.g., add transaction → save → display in list)
-  - **Golden Tests**: Key UI components to detect visual regressions
-- **Test Pyramid**: Majority unit tests (fast), moderate widget tests, minimal integration tests (slow but comprehensive)
-- **CI/CD Gates**: All tests MUST pass before merge; coverage cannot decrease; performance tests for large lists (1000+ items)
+### 1.1 Spec-Driven Development
+- **Spec trước, code sau**: Mọi thay đổi về yêu cầu phải cập nhật **spec.md** trước khi sửa code.
+- **Không thêm ngoài scope**: AI/Dev không tự thêm tính năng (sync, login, chart phức tạp, notification…) nếu spec không yêu cầu.
+- **Generated Integrity**: 
+    - Không manual edit các file “spec artifacts” do Spec Kit tạo (spec/plan/tasks auto-gen). Constitution chỉ thay đổi qua amendment (PR + rationale).
+    - Với code implement: Được phép viết tay logic, nhưng phải giữ đồng bộ với spec/plan; nếu chỉnh làm thay đổi contract/behavior thì update plan.md trước.
+- **Consistency Check**: 
+    - Plan.md nên định nghĩa public API / domain contracts / data model / navigation.
+    - Code thực thi (Implementation) phải tuân thủ đầy đủ public contracts trong plan.md (entities, repository interfaces, use-cases, BLoC public events/states). 
+    - UI widgets và helper/private methods không bắt buộc liệt kê trong plan.
+- **Clarification Gate**: Khi gặp mơ hồ (vd: sửa/xóa transaction có hay không? category có default không?), bắt buộc cập nhật spec.md (Assumptions/Decisions) trước khi implement.
+- **AC-Driven Verification**: Mỗi acceptance criteria quan trọng phải có cách verify rõ (unit/widget/manual checklist) và được track trong tasks.md.
+- **Change control (Spec → Plan → Tasks)**:
+    - Change business behavior → update spec.md
+    - Change architecture/contract → update plan.md
+    - Change implementation steps → update tasks.md
 
-**Rationale**: Flutter's hot reload encourages rapid iteration but can hide bugs. Test-first ensures features work as specified and prevents regressions. High coverage builds confidence for refactoring.
+- **Artifacts bắt buộc** (commit vào repo):
+  - `constitution.md`: project rules
+  - `spec.md` (what/why + acceptance criteria)
+  - `plan.md` (how + kiến trúc + data model)
+  - `tasks.md` (task breakdown + DoD)
 
----
+### 1.2 Maintainability over Cleverness
+- **KISS (Keep It Simple, Stupid)**: Ưu tiên code dễ đọc, dễ bảo trì hơn là “kỹ thuật cao”. Một đoạn code "ngu ngơ" mà chạy đúng Spec tốt hơn một đoạn code "ảo diệu" mà khó test.
+- **Explicit over Implicit**: Luồng dữ liệu và state phải nhìn là hiểu (events → states / input → output). Tránh “ngầm hiểu”. 
+- **No Magic**: Tránh giải pháp khó đọc (ví dụ: lạm dụng generics quá sâu, dynamic types, reflection). Codegen chuẩn (freezed/json_serializable/build_runner) thì được phép. Không giấu logic quan trọng trong extension/utility “thần thánh”.
+- **One Obvious Way**: Một pattern dùng xuyên suốt dự án (cùng style đặt tên, cùng style state management, cùng cách map model↔entity). Nếu đổi pattern phải cập nhật `plan.md` (Decision) trước.
+- **Immutable State**: State (BLoC/Cubit) và Domain entities/value objects nên bất biến; mọi update tạo instance mới (copyWith/new). Không mutate state object sau khi emit.
+- **Logic Isolation**: Business rules & use-cases nằm ở Domain. Presentation chỉ orchestration UI (thu input → gọi use-case → render state), không chứa quyết định nghiệp vụ.
 
-### III. User Experience Consistency
 
-**MUST Requirements**:
-- **Design System**: Single source of truth for colors, typography, spacing (define in theme); use Material Design 3 components consistently
-- **Responsive Design**: Support phone (portrait/landscape), tablet, and foldable devices; test on smallest (320x568) and largest common screens
-- **Accessibility**: Semantic labels for screen readers; minimum touch target 48x48 dp; color contrast ratio ≥4.5:1; support system font scaling
-- **User Feedback**: Loading states (shimmer/skeleton screens), error messages (user-friendly + actionable), success confirmations (snackbars), empty states (illustrations + CTAs)
-- **Navigation**: Consistent patterns (bottom nav for main sections, tabs for categories, modal sheets for forms); predictable back button behavior
-- **Offline Support**: Local-first approach; sync when online; clear indicators for offline mode; queue failed operations for retry
-
-**Rationale**: Expense tracking is a daily habit app. Consistent UX builds trust and reduces cognitive load. Accessibility ensures inclusivity. Offline support is critical for financial apps used anywhere.
-
----
-
-### IV. Performance Requirements
-
-**MUST Requirements**:
-- **Rendering**: 60 fps (16ms per frame) for scrolling lists and animations; 120 fps on ProMotion displays
-- **Startup Time**: Cold start <2s on mid-range devices (e.g., Pixel 6); warm start <500ms
-- **Memory**: <150 MB baseline; <250 MB peak with 1000 transactions loaded; no memory leaks (test with DevTools)
-- **Database Operations**: Queries <100ms for <10K records; batch inserts for bulk operations; indexed fields for frequent queries
-- **Asset Optimization**: Images compressed (WebP preferred); use svg for icons; lazy load images; cache network images
-- **Build Size**: APK <20 MB (before split-apks); use code splitting for non-critical features; tree-shaking enabled
-- **Profiling**: Profile BEFORE implementing optimizations; measure impact; use DevTools for timeline, memory, and network analysis
-
-**Rationale**: Financial apps must be fast and reliable. Users expect instant response when adding expenses. Poor performance damages trust. Flutter's performance capabilities are wasted without discipline.
+### 1.3 Data Integrity & Local-Only
+- **Offline-only**: MVP không có remote. Business logic thao tác dữ liệu qua Repository (local datasource), không gọi network.
+- **Integer Currency**: Tất cả số tiền (`amount`) phải dùng kiểu `int`. Không dùng `double` để tránh sai số tài chính.
+- **Reactive Single Source of Truth SSOT**: UI phải phản ứng (react) theo thay đổi của Database (thông qua Stream/ValueListenable). Luồng chuẩn: Action → Write DB → DB emits change → UI rebuild. Không cập nhật UI thủ công từ biến tạm.
 
 ---
 
-## Flutter Technology Stack
+## 2) Product Scope (MVP)
 
-**Framework**: Flutter 3.x (stable channel); Dart 3.x with null-safety  
-**State Management**: BLoC pattern (flutter_bloc) for complex state; Cubit for simple screens; Provider for dependency injection  
-**Storage**: 
-- Local: sqflite (relational data), hive (key-value cache), shared_preferences (settings)
-- Remote: Firebase Firestore (real-time sync) OR REST API + Dio (http client)
-
-**Navigation**: go_router (declarative routing with deep linking support)  
-**Testing**: 
-- flutter_test (widget/unit), integration_test (e2e)
-- mocktail (mocking), golden_toolkit (screenshot tests)
-
-**Code Quality**: 
-- flutter_lints (official lint rules)
-- dart format (auto-formatting)
-- import_sorter (organize imports)
-
-**CI/CD**: GitHub Actions (run tests, check coverage, build APK/IPA)  
-**Analytics**: Firebase Analytics (user behavior), Crashlytics (crash reporting)  
-**Performance**: Firebase Performance Monitoring OR custom metrics
+> Scope này là “hợp đồng sản phẩm” cho MVP.  
+> Mọi thứ không nằm trong MUST/SHOULD mặc định là OUT OF SCOPE (trừ khi amend).
 
 ---
 
-## Development Workflow & Quality Gates
+### 2.1 MUST (Bắt buộc có trong MVP)
 
-**Feature Development Flow**:
-1. **Specification**: Use `/speckit.specify` to create detailed spec with user scenarios
-2. **Planning**: Use `/speckit.plan` to design architecture (layers, entities, state flows)
-3. **Test Creation**: Write tests for acceptance scenarios BEFORE implementation
-4. **Implementation**: Implement feature incrementally (TDD: red → green → refactor)
-5. **Review**: Code review checks constitution compliance (checklist below)
-6. **Validation**: Run full test suite + manual testing on physical devices
+#### A) App Navigation
+- Có **2 tab** ở bottom bar:
+  - **Sổ giao dịch** (Home)
+  - **Cài đặt** (Settings)
+- Có nút **( + )** ở giữa bottom bar để mở màn **Giao dịch mới** (Add Transaction).
 
-**Quality Gates** (MUST pass before merge):
-- [ ] All tests pass (unit, widget, integration)
-- [ ] Code coverage meets minimums (80% business logic, 70% data layer)
-- [ ] Linting passes with zero warnings
-- [ ] Performance profiling shows no regressions (if UI/data-heavy feature)
-- [ ] Accessibility audit passes (screen reader, contrast, touch targets)
-- [ ] Code review approved by minimum 1 peer
-- [ ] Responsive design tested on 3+ screen sizes
-- [ ] Offline behavior tested (if feature uses network)
+#### B) Home (Sổ giao dịch)
+- Header chào user dạng text (ví dụ: “Hi, DaoLQ”) + avatar (có thể static).
+- Danh sách giao dịch:
+  - **Group theo ngày** (header ngày + thứ như mock).
+  - Sort theo `createdAt` giảm dần (mới nhất lên trên).
+  - Mỗi item hiển thị tối thiểu:
+    - icon category
+    - `transactionName` (dòng 1)
+    - `categoryName` (dòng 2, bên trái)
+    - `amount` (bên phải, có dấu +/- theo type)
+- Empty state khi chưa có giao dịch.
+- Tap transaction item: show snackbar "No-op" (không mở detail screen)
 
-**Versioning & Releases**:
-- **Semantic Versioning**: MAJOR.MINOR.PATCH (e.g., 1.2.3)
-- **MAJOR**: Breaking changes to data models (requires migration)
-- **MINOR**: New features, non-breaking improvements
-- **PATCH**: Bug fixes, performance optimizations
-- **Build Number**: Auto-increment on each release (e.g., 1.2.3+42)
+#### C) Settings (Cài đặt)
+- Màn settings có 2 lựa chọn:
+  - **Ngôn ngữ**
+  - **Quản lý thể loại (category)**
+
+#### D) Language (Ngôn ngữ)
+- Cho chọn 2 ngôn ngữ:
+  - **English (UK)**
+  - **Việt Nam**
+- Lưu `languageCode` local; đổi ngôn ngữ có hiệu lực ngay và giữ sau khi restart app.
+
+#### E) Manage Categories (Quản lý thể loại)
+- Có 2 tab:
+  - **Chi tiêu**
+  - **Thu nhập**
+- Category có tối thiểu: `id`, `name`, `type (expense|income)`, `iconKey`.
+- Hiển thị category theo dạng **grid** (icon + label).
+- Có tile/nút **( + )** để tạo mới category.
+- **Seed categories mặc định** cho 2 tab khi cài app lần đầu:
+  - chỉ seed nếu DB chưa có category
+  - không tạo trùng lặp khi mở app lại
+- Add new category (dialog):
+  - Field **Tên nhóm phân loại*** — required - Input text ngắn tối đa 20 kí tự.
+  - Hiển thị **Icon** - dùng `iconKey` từ danh sách preset
+  - Actions: **HỦY / TẠO**
+- Category tạo xong phải dùng được ngay ở modal chọn category của Add Transaction.
+
+#### F) Add Transaction (Giao dịch mới)
+- Mở từ nút **( + )**.
+- Form gồm các field (đúng theo ảnh):
+  - **Chọn nhóm giao dịch (category)**(*) — required - Modal chọn Category.
+  - **Tên giao dịch**(*) — required - Input text ngắn tối đa 50 kí tự.
+  - **Số tiền giao dịch**(*) — required, `int`, `> 0` - require input Number
+  - **Đến hạn** — optional date - Date picker (mặc định ngày hiện tại)
+  - **Ghi chú** — optional text - Text field vùng nhập liệu multiline.
+- Actions:
+  - **HỦY**: đóng màn hình, không ghi DB
+  - **TẠO**: ghi DB
+- Sau khi “TẠO” thành công: quay lại Home và cập nhật list theo **Reactive Single Source of Truth (SSOT)**
+  - Flow: Action → Write DB → DB emits → UI rebuild
 
 ---
 
-## Governance
+### 2.2 SHOULD (Nên có nếu kịp, không bắt buộc)
 
-**Authority**: This constitution supersedes all informal practices. When conflicts arise, constitution principles win.
+- **Hiển thị trạng thái selected** cho language (tick/highlight).
+- **Validate nâng cao**:
+  - chặn tên category trùng trong cùng tab (Chi tiêu hoặc Thu nhập)
+  - chặn ký tự không hợp lệ ở amount
+- UI polish:
+  - format tiền theo locale (VI/EN) nhưng storage vẫn `int`
+  - loading/saving state khi nhấn “TẠO”
+- Due date:
+  - chọn date picker + lưu `dueDate` (optional) và hiển thị lại (nếu bạn muốn dùng thật)
 
-**Amendment Process**:
-1. Propose change via `/speckit.constitution` command with rationale
-2. Document impact on existing features and templates
-3. Update version following semantic rules (see Versioning section)
-4. Propagate changes to affected templates and documentation
-5. Announce to team with migration guidance if backward-incompatible
+---
 
-**Compliance Review**:
-- All feature specs (spec.md) MUST reference relevant principles
-- All implementation plans (plan.md) include "Constitution Check" gate
-- All pull requests verify compliance via quality gates checklist
-- Quarterly audits of codebase for principle adherence
+### 2.3 OUT OF SCOPE (Không làm trong MVP)
 
-**Version**: 1.0.0 | **Ratified**: 2025-12-18 | **Last Amended**: 2025-12-18
+- Edit/Delete transaction
+- Edit/Delete category (menu 3 chấm ở màn categories nếu có: để OUT OF SCOPE ở MVP)
+- Sync/backup cloud, multi-device
+- Login/user profile thật
+- Export/Import CSV/Excel, share report
+- Notification, OCR scan hoá đơn
+- Đa tiền tệ, tỷ giá, số thập phân
+
+---
+
+### 2.4 Decisions & Assumptions (BẮT BUỘC ghi vào spec.md trước khi implement)
+
+1) **Due date**:
+- chỉ lưu cho có, hay có yêu cầu dùng (filter/sort/nhắc)?
+
+2) **Critical Decisions**
+- Logic phân loại: Transaction.type luôn bằng Category.type của category được chọn.
+- Date handling: date dùng để định danh nhóm hiển thị và sắp xếp ở Home.
+- Home grouping & sorting dùng Transaction.createdAt (local time). dueDate chỉ metadata, không ảnh hưởng group/sort trong MVP.
+---
+
+## 3) Technical Standards (MUST)
+
+### 3.1 Architecture (simple & testable)
+- Tách tối thiểu 3 lớp:
+  - **Presentation**: UI + State (Cubit/BLoC)
+  - **Domain**: Use-cases (logic nghiệp vụ)
+  - **Data**: Repository + Local DB
+- Quy tắc phụ thuộc: Presentation → Domain → Data (không ngược chiều)
+- Dependency injection bằng get_it.
+
+### 3.2 State Management
+  - Cubit/BLoC 
+  - Cubit cho màn hình đơn giản
+
+### 3.3 Storage
+- **Database (MVP)**:
+- dùng shared_preferences cho lưu setting ex: language, dùng sqflite cho lưu categories, imcome / outcome
+
+### 3.4 Localization
+- Dùng `flutter_localizations` + `intl` + ARB.
+- Khi đổi language: UI cập nhật ngay (rebuild app) và lưu lại lựa chọn.
+
+### 3.5 Code Quality
+- Bắt buộc pass:
+  - `dart format .`
+  - `flutter analyze`
+- Naming rõ ràng, tránh abbreviations khó hiểu.
+- Mỗi file nên “vừa đủ”, ưu tiên chia nhỏ theo feature thay vì file khổng lồ.
+
+---
+
+## 4) Testing Standards (MUST)
+
+### 4.1 Minimum Test Set (MVP)
+- **Unit tests (MUST)** cho Domain use-cases quan trọng:
+  - Add transaction
+  - List transactions sorted by createdAt desc
+  - CRUD category (ít nhất create/delete)
+  - Save/read language setting
+- **Widget tests (SHOULD)** cho 1–2 flow chính:
+  - Add transaction → Save → Home hiển thị item mới
+- Integration test: optional (nếu team có thời gian).
+
+### 4.2 Definition of Done cho 1 task/PR
+- AC liên quan trong `spec.md` được cover (code + test hoặc lý do).
+- `flutter test` pass.
+- Không có warning từ analyzer.
+- Không thêm dependency “toàn năng” khi chưa cần.
+
+---
+
+## 5) UX Standards (MUST)
+
+- UI dùng Material 3, theme thống nhất (colors/typography/spacing).
+- Có:
+  - Empty state (Home rỗng)
+  - Validation message (amount/category bắt buộc)
+  - Feedback sau khi save (snackbar/toast)
+- Accessibility cơ bản:
+  - Touch target hợp lý
+  - Semantics cho nút chính (Add/Save)
+
+---
+
+## 6) Performance Standards (MUST)
+
+- Home list dùng `ListView.builder` (không render toàn bộ).
+- Sorting/filtering thực hiện ở layer phù hợp (ưu tiên DB query nếu có thể).
+- App vẫn scroll mượt với **~1000 transactions** trên máy tầm trung.
+
+---
+
+## 7) Workflow & Quality Gates (MUST)
+
+### SDD Flow (theo Spec Kit)
+1. `/speckit.specify` → cập nhật `spec.md`
+2. `/speckit.plan` → cập nhật `plan.md`
+3. `/speckit.tasks` → cập nhật `tasks.md`
+4. Implement theo tasks (không nhảy bước)
+
+### Merge Gate (PR MUST pass)
+- [ ] `spec.md / plan.md / tasks.md` đồng bộ với thay đổi code (nếu có thay đổi requirement)
+- [ ] `flutter analyze` sạch
+- [ ] `flutter test` pass
+- [ ] Manual sanity check 4 màn hình (Home/Add/Categories/Settings)
+
+---
+
+## 8) Amendments
+- Mọi thay đổi constitution phải có:
+  - Lý do (rationale)
+  - Phần bị ảnh hưởng (spec/plan/tasks)
+  - Version bump theo semantic (MAJOR/MINOR/PATCH)
+
+**End of Constitution**
