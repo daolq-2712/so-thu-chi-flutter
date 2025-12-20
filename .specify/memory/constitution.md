@@ -319,22 +319,39 @@ Tối thiểu 1–2 flow quan trọng:
 
 ## 5) UX Standards (MUST)
 
-- UI dùng Material 3, theme thống nhất (colors/typography/spacing).
-- Có:
-  - Empty state (Home rỗng)
-  - Validation message (amount/category bắt buộc)
-  - Feedback sau khi save (snackbar/toast)
+- UI dùng **Material 3**, theme thống nhất (colors/typography/spacing).
+- Must-have UX states:
+  - **Empty state** (Home rỗng): có message + CTA gợi ý “Thêm giao dịch” (button/FAB).
+  - **Validation message** rõ ràng cho required fields:
+    - Transaction: category bắt buộc
+    - Transaction: name bắt buộc, max length **≤ 50**
+    - Transaction: amount bắt buộc, **int** và **> 0**
+    - Category (Add dialog): name bắt buộc, max length **≤ 20**
+  - **Feedback sau khi save**:
+    - success: snackbar/toast
+    - failure: error message + hướng dẫn user thử lại/kiểm tra input
 - Accessibility cơ bản:
-  - Touch target hợp lý
-  - Semantics cho nút chính (Add/Save)
+  - Touch target hợp lý (khuyến nghị ≥ 48x48 dp)
+  - Semantics cho nút chính (Add/Save/Cancel) và các item list quan trọng
+- Localization:
+  - Tất cả text hiển thị ra UI phải lấy từ `l10n` (ARB), không hardcode string trong widget (trừ debug/dev only)
 
 ---
 
 ## 6) Performance Standards (MUST)
 
 - Home list dùng `ListView.builder` (không render toàn bộ).
-- Sorting/filtering thực hiện ở layer phù hợp (ưu tiên DB query nếu có thể).
+- Sorting/filtering thực hiện ở layer phù hợp:
+  - ưu tiên DB query + indexing đơn giản nếu cần
+  - không sort list lớn trong UI thread nếu có thể tránh
+- DB indexes (MVP - SHOULD có nếu query chậm):
+  - `transactions(createdAt)`
+  - `transactions(categoryId)`
+  - `categories(type)`
 - App vẫn scroll mượt với **~1000 transactions** trên máy tầm trung.
+- Reactive SSOT performance:
+  - tránh emit stream quá nhiều lần không cần thiết (1 write → 1 refresh → 1 emit)
+  - UI rebuild theo phạm vi nhỏ nhất có thể (tách widget, dùng const khi phù hợp)
 
 ---
 
@@ -346,11 +363,21 @@ Tối thiểu 1–2 flow quan trọng:
 3. `/speckit.tasks` → cập nhật `tasks.md`
 4. Implement theo tasks (không nhảy bước)
 
+### Change Rule (MUST)
+- Nếu PR **thay đổi behavior/AC** → update `spec.md` trước.
+- Nếu PR **thay đổi contract/architecture/schema/routes** → update `plan.md` trước.
+- Nếu PR **thay đổi thứ tự/steps thực thi** → update `tasks.md` trước.
+- PR không được “code trước rồi mới hợp thức hóa spec/plan” (trừ hotfix nhỏ, phải ghi rõ rationale).
+
 ### Merge Gate (PR MUST pass)
-- [ ] `spec.md / plan.md / tasks.md` đồng bộ với thay đổi code (nếu có thay đổi requirement)
+- [ ] `spec.md / plan.md / tasks.md` đồng bộ với thay đổi code (nếu có thay đổi requirement/contract)
+- [ ] `tasks.md` có mapping AC → verification (UNIT/WIDGET/MANUAL) cho phần thay đổi
+- [ ] `dart format .` đã chạy
 - [ ] `flutter analyze` sạch
 - [ ] `flutter test` pass
-- [ ] Manual sanity check 4 màn hình (Home/Add/Categories/Settings)
+- [ ] Nếu thay DB schema: bump `dbVersion` + migration script + repo stream tests liên quan
+- [ ] Manual sanity check 4 màn hình (Home/Add/Categories/Settings) pass
+- [ ] Không thêm dependency “toàn năng” khi chưa cần (nếu thêm phải có rationale trong PR)
 
 ---
 
@@ -359,5 +386,13 @@ Tối thiểu 1–2 flow quan trọng:
   - Lý do (rationale)
   - Phần bị ảnh hưởng (spec/plan/tasks)
   - Version bump theo semantic (MAJOR/MINOR/PATCH)
+- Semantic guideline (MUST):
+  - **PATCH**: chỉnh wording/clarity, không đổi behavior/contract
+  - **MINOR**: thêm rule mới hoặc mở rộng scope không breaking
+  - **MAJOR**: breaking change (đổi contract, đổi rule làm code hiện tại không còn hợp lệ)
+- **Amendment process (MUST)**:
+  - tạo PR riêng (hoặc commit rõ ràng trong PR tính năng)
+  - mô tả impact (có/không cần migrate, có/không thay AC)
+  - sau khi merge mới được áp dụng vào spec/plan/tasks tiếp theo
 
 **End of Constitution**
