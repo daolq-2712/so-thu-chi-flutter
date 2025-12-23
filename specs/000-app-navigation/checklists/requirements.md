@@ -1,50 +1,55 @@
-# Specification Quality Checklist: App Navigation
+# Spec Quality Checklist — App Navigation
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning  
+**Purpose**: Validate spec completeness + scope discipline before `/speckit.plan`  
 **Created**: 2025-12-23  
 **Feature**: [spec.md](../spec.md)
 
-## Content Quality
+## Content Quality (SDD-aligned)
 
-- [x] No implementation details (languages, frameworks, APIs)
-- [x] Focused on user value and business needs
-- [x] Written for non-technical stakeholders
-- [x] All mandatory sections completed
+- [ ] Requirements & Acceptance Scenarios are behavior-focused (no code/API/framework details)
+- [ ] Any technical context (router/localization/material component names) appears ONLY in Assumptions/Dependencies
+- [ ] Spec matches MVP scope for App Navigation shell ONLY (tabs + center (+) action)
+- [ ] Avoids inventing new product behaviors not in constitution/mock (e.g., unsaved-changes warnings, deep link requirements)
 
 ## Requirement Completeness
 
-- [x] No [NEEDS CLARIFICATION] markers remain
-- [x] Requirements are testable and unambiguous
-- [x] Success criteria are measurable
-- [x] Success criteria are technology-agnostic (no implementation details)
-- [x] All acceptance scenarios are defined
-- [x] Edge cases are identified
-- [x] Scope is clearly bounded
-- [x] Dependencies and assumptions identified
+- [ ] No [NEEDS CLARIFICATION] markers remain
+- [ ] Requirements are testable and unambiguous (route outcomes, selected state, presence of 2 tabs)
+- [ ] Acceptance Scenarios cover the P1 flows:
+  - tab switching (/home, /settings)
+  - (+) opens /add-transaction
+  - return from /add-transaction returns to previous tab
+- [ ] Out of Scope section explicitly excludes:
+  - deep linking requirements
+  - session-persisted tab state
+  - unsaved-changes warnings
+  - tablet/adaptive navigation
+- [ ] Dependencies/Assumptions are listed minimally (routes exist, l10n exists)
+
+## Success Criteria Quality
+
+- [ ] Success Criteria are binary/verifiable (avoid timing metrics like 100ms/200ms or “100% success rate”)
+- [ ] Accessibility criteria are verifiable (touch target ≥48dp, semantics labels exist)
 
 ## Feature Readiness
 
-- [x] All functional requirements have clear acceptance criteria
-- [x] User scenarios cover primary flows
-- [x] Feature meets measurable outcomes defined in Success Criteria
-- [x] No implementation details leak into specification
+- [ ] Spec is READY FOR PLANNING only if it does not include non-shell responsibilities (language change behavior, child screen behavior, deep link handling)
+- [ ] FR set is minimal and maps cleanly to verification type (WIDGET/MANUAL/CODE_REVIEW)
 
-## Validation Results
+---
 
-**Status**: ✅ PASSED - All checklist items completed successfully
+## Validation Notes (Reviewer)
 
-**Date Validated**: 2025-12-23
+### What’s OK
+- Shell navigation has clear P1 behaviors: 2 tabs + center (+).
 
-**Summary**: The specification is complete, testable, and ready for the planning phase. All mandatory sections are filled with concrete details from the constitution requirements. No clarifications needed - the spec contains sufficient detail for implementation planning.
+### What must be removed or moved (if present)
+- Timing/performance metrics in Success Criteria
+- Deep link requirements
+- Unsaved-changes warning behavior
+- Framework-specific requirements in FR section (keep them in Assumptions/Dependencies)
 
-## Notes
+---
 
-- Spec successfully references constitution sections for context (navigation routes, localization, Material 3)
-- All 14 functional requirements are testable and unambiguous
-- 10 success criteria defined with measurable metrics
-- 12 assumptions documented to clarify scope boundaries
-- 7 key decisions documented with rationale
-- 4 user stories prioritized (2xP1, 2xP2) with independent test criteria
-- 6 edge cases identified
-- Ready to proceed to `/speckit.plan` phase
-
+## Final Status
+- [ ] READY FOR PLANNING (`/speckit.plan`)
