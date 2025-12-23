@@ -50,10 +50,10 @@ Add to `app_vi.arb`:
 ```
 
 **DoD**:
-- [ ] Keys added to both EN and VI ARB files
-- [ ] Run `flutter gen-l10n` to regenerate AppLocalizations
-- [ ] Verify no build errors after codegen
-- [ ] Commit ARB changes
+- [X] Keys added to both EN and VI ARB files
+- [X] Run `flutter gen-l10n` to regenerate AppLocalizations
+- [X] Verify no build errors after codegen
+- [X] Commit ARB changes
 
 **Verification**: CODE_REVIEW + WIDGET (tested in Task 3.5)  
 **Mapping**: FR-NAV-008 (localized labels), User Story 3 Scenario 1
@@ -90,12 +90,12 @@ class HomePage extends StatelessWidget {
 Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionPage (`Key('page_add_transaction')`).
 
 **DoD**:
-- [ ] HomePage created with `Key('page_home')`
-- [ ] SettingsPage created with `Key('page_settings')`
-- [ ] AddTransactionPage created with `Key('page_add_transaction')`
-- [ ] No hardcoded visible strings (use l10n for AppBar titles)
-- [ ] All pages compile without errors
-- [ ] Commit placeholder pages
+- [X] HomePage created with `Key('page_home')`
+- [X] SettingsPage created with `Key('page_settings')`
+- [X] AddTransactionPage created with `Key('page_add_transaction')`
+- [X] No hardcoded visible strings (use l10n for AppBar titles)
+- [X] All pages compile without errors
+- [X] Commit placeholder pages
 
 **Verification**: CODE_REVIEW  
 **Mapping**: Infrastructure for FR-NAV-003, FR-NAV-004, FR-NAV-005 (routing targets)
@@ -126,12 +126,12 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 - Returning from `/add-transaction` pops to previous branch (no manual state needed)
 
 **DoD**:
-- [ ] `app_router.dart` created with go_router configuration
-- [ ] StatefulShellRoute with 2 branches (Home, Settings)
-- [ ] Standalone route `/add-transaction` defined (not wrapped in shell)
-- [ ] Router integrated into `MaterialApp.router`
-- [ ] App compiles (may crash if ScaffoldWithNavBar doesn't exist yet)
-- [ ] Commit router configuration
+- [X] `app_router.dart` created with go_router configuration
+- [X] StatefulShellRoute with 2 branches (Home, Settings)
+- [X] Standalone route `/add-transaction` defined (not wrapped in shell)
+- [X] Router integrated into `MaterialApp.router`
+- [X] App compiles (may crash if ScaffoldWithNavBar doesn't exist yet)
+- [X] Commit router configuration
 
 **Verification**: CODE_REVIEW  
 **Mapping**: FR-NAV-003, FR-NAV-004, FR-NAV-005, FR-NAV-007 (routes + return behavior)
@@ -163,14 +163,14 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 3. Material 3 styling is automatic via theme
 
 **DoD**:
-- [ ] `ScaffoldWithNavBar` widget created
-- [ ] Exactly 2 NavigationDestination items with l10n labels (no hardcoded strings)
-- [ ] FAB has `tooltip` with `fabAddTransaction` l10n key
-- [ ] `onDestinationSelected` calls `navigationShell.goBranch(index)`
-- [ ] FAB `onPressed` navigates to `/add-transaction` via `context.push('/add-transaction')`
-- [ ] Active tab automatically indicated by NavigationBar (uses `selectedIndex`)
-- [ ] App compiles and runs
-- [ ] Commit shell widget
+- [X] `ScaffoldWithNavBar` widget created
+- [X] Exactly 2 NavigationDestination items with l10n labels (no hardcoded strings)
+- [X] FAB has `tooltip` with `fabAddTransaction` l10n key
+- [X] `onDestinationSelected` calls `navigationShell.goBranch(index)`
+- [X] FAB `onPressed` navigates to `/add-transaction` via `context.push('/add-transaction')`
+- [X] Active tab automatically indicated by NavigationBar (uses `selectedIndex`)
+- [X] App compiles and runs
+- [X] Commit shell widget
 
 **Verification**: CODE_REVIEW + WIDGET (tested in Phase 3)  
 **Mapping**: FR-NAV-001, FR-NAV-002, FR-NAV-006, FR-NAV-008, FR-NAV-009 (shell structure + labels + semantics)
@@ -196,12 +196,12 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 - **Do NOT rely on reading route strings** (use widget presence + selectedIndex)
 
 **DoD**:
-- [ ] Test file created at `test/core/router/scaffold_with_nav_bar_test.dart`
-- [ ] Test: App launches → `Key('page_home')` visible, `selectedIndex == 0`
-- [ ] Test: Tap Settings destination → `Key('page_settings')` visible, `selectedIndex == 1`
-- [ ] Test: Tap Home destination → `Key('page_home')` visible, `selectedIndex == 0`
-- [ ] All tests pass (`flutter test`)
-- [ ] Commit test file
+- [X] Test file created at `test/core/router/scaffold_with_nav_bar_test.dart`
+- [X] Test: App launches → `Key('page_home')` visible, `selectedIndex == 0`
+- [X] Test: Tap Settings destination → `Key('page_settings')` visible, `selectedIndex == 1`
+- [X] Test: Tap Home destination → `Key('page_home')` visible, `selectedIndex == 0`
+- [X] All tests pass (`flutter test`)
+- [X] Commit test file
 
 **Verification**: WIDGET  
 **Mapping**:
@@ -228,10 +228,10 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 - **Do NOT read route strings** (use widget presence)
 
 **DoD**:
-- [ ] Test: From Home, tap FAB → `Key('page_add_transaction')` visible
-- [ ] Test: From Settings, tap FAB → `Key('page_add_transaction')` visible
-- [ ] All tests pass (`flutter test`)
-- [ ] Commit updated test
+- [X] Test: From Home, tap FAB → `Key('page_add_transaction')` visible
+- [X] Test: From Settings, tap FAB → `Key('page_add_transaction')` visible
+- [X] All tests pass (`flutter test`)
+- [X] Commit updated test
 
 **Verification**: WIDGET  
 **Mapping**:
@@ -259,10 +259,10 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 - **Do NOT read route strings** (use widget presence + selectedIndex)
 
 **DoD**:
-- [ ] Test: Home → FAB → pop → returns to Home (`selectedIndex == 0`)
-- [ ] Test: Settings → FAB → pop → returns to Settings (`selectedIndex == 1`)
-- [ ] All tests pass (`flutter test`)
-- [ ] Commit updated test
+- [X] Test: Home → FAB → pop → returns to Home (`selectedIndex == 0`)
+- [X] Test: Settings → FAB → pop → returns to Settings (`selectedIndex == 1`)
+- [X] All tests pass (`flutter test`)
+- [X] Commit updated test
 
 **Verification**: WIDGET  
 **Mapping**:
@@ -289,11 +289,11 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 - For Add Transaction: `expect(find.byType(NavigationBar), findsNothing)`
 
 **DoD**:
-- [ ] Test: On Home → NavigationBar visible
-- [ ] Test: On Settings → NavigationBar visible
-- [ ] Test: On Add Transaction → NavigationBar NOT visible
-- [ ] All tests pass (`flutter test`)
-- [ ] Commit updated test
+- [X] Test: On Home → NavigationBar visible
+- [X] Test: On Settings → NavigationBar visible
+- [X] Test: On Add Transaction → NavigationBar NOT visible
+- [X] All tests pass (`flutter test`)
+- [X] Commit updated test
 
 **Verification**: WIDGET  
 **Mapping**: Plan requirement (bottom nav hidden on `/add-transaction`)
@@ -317,10 +317,10 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 - Use `tester.widget<NavigationDestination>(find.byType(NavigationDestination).at(0)).label`
 
 **DoD**:
-- [ ] Test: EN locale → labels are "Home" / "Settings"
-- [ ] Test: VI locale → labels are "Sổ giao dịch" / "Cài đặt"
-- [ ] All tests pass (`flutter test`)
-- [ ] Commit updated test
+- [X] Test: EN locale → labels are "Home" / "Settings"
+- [X] Test: VI locale → labels are "Sổ giao dịch" / "Cài đặt"
+- [X] All tests pass (`flutter test`)
+- [X] Commit updated test
 
 **Verification**: WIDGET  
 **Mapping**:
@@ -347,10 +347,10 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 - Call `handle.dispose()` after test
 
 **DoD**:
-- [ ] Test: FAB `tooltip` matches `context.l10n.fabAddTransaction`
-- [ ] Test: NavigationDestination widgets have non-empty `label` properties
-- [ ] All tests pass (`flutter test`)
-- [ ] Commit updated test
+- [X] Test: FAB `tooltip` matches `context.l10n.fabAddTransaction`
+- [X] Test: NavigationDestination widgets have non-empty `label` properties
+- [X] All tests pass (`flutter test`)
+- [X] Commit updated test
 
 **Verification**: WIDGET  
 **Mapping**:
@@ -453,9 +453,9 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 3. Fix any linter warnings/errors
 
 **DoD**:
-- [ ] `dart format .` executed (code auto-formatted)
-- [ ] `flutter analyze` passes with zero issues
-- [ ] Commit any formatting fixes
+- [X] `dart format .` executed (code auto-formatted)
+- [X] `flutter analyze` passes with zero issues
+- [X] Commit any formatting fixes
 
 **Verification**: CODE_REVIEW  
 **Mapping**: Constitution 3.6 (Code Quality), 4.5 (Definition of Done)
@@ -471,9 +471,9 @@ Apply same pattern for SettingsPage (`Key('page_settings')`) and AddTransactionP
 2. Ensure all tests pass (0 failures)
 
 **DoD**:
-- [ ] `flutter test` executed
-- [ ] All widget tests pass (Tasks 3.1-3.7)
-- [ ] If failures, fix and re-run until passing
+- [X] `flutter test` executed
+- [X] All widget tests pass (Tasks 3.1-3.7)
+- [X] If failures, fix and re-run until passing
 
 **Verification**: WIDGET  
 **Mapping**: Constitution 4.5 (Definition of Done)
