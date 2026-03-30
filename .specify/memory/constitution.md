@@ -3,7 +3,7 @@
 **Purpose**: Tài liệu này là “luật chơi” (source of truth) cho dự án MVP app quản lý thu/chi (4 màn hình).  
 **Scope MVP**: Local-only (offline by default), không sync cloud, không analytics.  
 **Audience**: Flutter dev level Middle (~1 năm Flutter), mới dùng Spec Kit / SDD.  
-**Version**: 1.0.0 | **Ratified**: 2025-12-18
+**Version**: 1.1.0 | **Ratified**: 2025-12-18 | **Amended**: 2026-03-30
 
 ---
 
@@ -15,6 +15,7 @@
 - **Generated Integrity**: 
     - Không manual edit các file “spec artifacts” do Spec Kit tạo (spec/plan/tasks auto-gen). Constitution chỉ thay đổi qua amendment (PR + rationale).
     - Với code implement: Được phép viết tay logic, nhưng phải giữ đồng bộ với spec/plan; nếu chỉnh làm thay đổi contract/behavior thì update plan.md trước.
+    - Cho phép manual edit có rationale ngắn trong PR khi lệnh Speckit không đáp ứng
 - **Consistency Check**: 
     - Plan.md nên định nghĩa public API / domain contracts / data model / navigation.
     - Code thực thi (Implementation) phải tuân thủ đầy đủ public contracts trong plan.md (entities, repository interfaces, use-cases, BLoC public events/states). 
@@ -148,7 +149,7 @@
 ### 2.4 Decisions & Assumptions (BẮT BUỘC ghi vào spec.md trước khi implement)
 
 1) **Due date**:
-- chỉ lưu cho có, hay có yêu cầu dùng (filter/sort/nhắc)?
+- Chỉ lưu metadata, không ảnh hưởng sort/group/filter.
 
 2) **Critical Decisions**
 - Logic phân loại: Transaction.type luôn bằng Category.type của category được chọn.
@@ -159,14 +160,16 @@
 ## 3) Technical Standards (MUST)
 
 ### 3.1 Architecture (simple & testable)
-- Layered-first feature Architecture: Code phải được tổ chức theo tính năng (feature), trong mỗi feature chia thành 3 lớp:
-  - **Presentation**: UI + State (Cubit/BLoC)
-  - **Domain**: Entities (immutable), Use-cases, Repository interfaces
-  - **Data**: Chứa Repository Impl và Data Sources.
+- **Hybrid Feature + Shared Layer**: Presentation tổ chức theo feature; Domain và Data là shared modules dùng chung toàn app:
+  - `lib/features/<feature>/` — Presentation (UI + Cubit/BLoC) của từng feature.
+  - `lib/domain/` — **shared** Entities (immutable), Use-cases, Repository interfaces.
+  - `lib/data/` — **shared** Repository Impl, DataSources, DB helpers.
+  - `lib/core/` — DI setup, Theme, Constants, Utils.
+- Mỗi feature chỉ chứa code Presentation. Use-cases / Entities / Repository **không** đặt lẫn trong feature folder.
 - **Dependency Injection (DI)**: Sử dụng get_it làm Service Locator.
   - Quy tắc phụ thuộc: Presentation → Domain → Data (không ngược chiều)
   - Domain **không phụ thuộc Flutter** (pure Dart, không `BuildContext`, không `Material`, không `intl` UI)
-- **Repository interfaces** đặt ở Domain; implementations đặt ở Data.
+- **Repository interfaces** đặt ở `lib/domain/`; implementations đặt ở `lib/data/`.
   - Mọi “decision” ảnh hưởng contract (fields, repository methods, navigation routes) phải được ghi trong `plan.md`.
 - SDD Enforcement:
   - Sử dụng freezed để tạo ra các Immutable States (đúng tinh thần 1.2).
@@ -218,23 +221,74 @@
 - Naming rõ ràng, tránh abbreviations khó hiểu.
 - Mỗi file nên “vừa đủ”, ưu tiên chia nhỏ theo feature thay vì file khổng lồ.
 - Formatting: Chạy dart format . tự động trước khi commit code.
-- Folder Structure:
+- Folder Structure (Hybrid):
+```
 lib/
-├── core/              # DI, Theme, Constants, Utils
+├── core/                    # DI (get_it), Theme, Constants, Router, Utils
 ├── features/
-│   ├── home/          # UI, Cubit
-│   ├── transaction/   # UI, Cubit
-│   └── ...
-├── domain/            # Entities & Repository Interfaces
-└── data/              # Repositories Impl & DB Helpers
-
-- Rules: Entities (Domain) không chứa logic fromJSON/toJSON. Việc chuyển đổi dữ liệu từ Database/JSON được thực hiện bởi các Data Models (Data layer) thông qua Factory methods.
+│   ├── home/                # Presentation only: pages/, widgets/, cubit/
+│   ├── transaction/         # Presentation only: pages/, widgets/, cubit/
+│   ├── settings/            # Presentation only: pages/, widgets/, cubit/
+│   └── category/            # Presentation only: pages/, widgets/, cubit/
+├── domain/                  # SHARED — Entities, Use-cases, Repo interfaces
+│   ├── entities/
+│   ├── usecases/
+│   └── repositories/
+└── data/                    # SHARED — Repo Impl, DataSources, DB helpers
+    ├── repositories/
+    ├── datasources/
+    └── models/              # Data models (fromMap/toMap), không phải Entity
+```
+- Rules:
+  - Entities (Domain) **không** chứa logic fromMap/toMap. Việc chuyển đổi DB ↔ Entity thực hiện ở Data Models.
+  - Feature folder **không** import trực tiếp từ feature khác — mọi share đi qua domain/data/core.
+  - Test folder mirror cấu trúc src: `test/domain/`, `test/data/`, `test/features/<feature>/`.
 ---
 
 ## 4) Testing Standards (MUST)
 
 > Mục tiêu: đảm bảo Implementation luôn “khớp Spec”, giảm regression, và enforce AC-Driven Verification.
+### 4.0 TDD Workflow — Red → Green → Refactor (MUST)
 
+> Áp dụng cho toàn bộ Domain layer và Repository contract.
+
+#### Chu trình bắt buộc
+1. **Red** — Viết test mô tả behavior mong đợi (chạy phải fail). Không viết production code khi chưa có test.
+2. **Green** — Viết đúng lượng code tối thiểu để test pass. Không thêm code ngoài yêu cầu hiện tại của test.
+3. **Refactor** — Cải thiện readability/structure trong khi toàn bộ test vẫn xanh.
+
+#### Phạm vi áp dụng TDD
+| Layer | Bắt buộc | Ghi chú |
+|---|---|---|
+| Use-cases (`lib/domain/usecases/`) | **MUST** | TDD nghiêm ngặt |
+| Validators / business rules | **MUST** | TDD nghiêm ngặt |
+| Repository contract (stream/SSOT) | **MUST** | Test với sqflite_common_ffi |
+| Cubit / BLoC | **SHOULD** | TDD ưu tiên; test-after chấp nhận nếu state đơn giản và có rationale |
+| UI Widget | **MAY** | Không bắt buộc TDD; smoke test sau khi implement là đủ |
+
+#### Rules bắt buộc
+- **Test-first**: File test tạo trước (hoặc đồng thời) với file implementation — không sau.
+- **No untested domain code**: Không merge use-case / validator mới vào main nếu chưa có unit test cover.
+- **Tên test mô tả behavior** (không tên chung chung):
+  - ✅ `should_throw_when_amount_is_zero`
+  - ❌ `test_add_transaction`, `testCase1`
+- **1 test = 1 behavior**: Mỗi test method có 1 `expect` chính. Nhiều scenarios → nhiều test method.
+- **Arrange-Act-Assert (AAA)**: Mỗi test phải tách rõ 3 khối — setup, thực thi, assertion.
+- **Fake/Mock at boundary only**: Domain test dùng mock Repository interface (mocktail); không mock Entity hay Value Object thuần.
+
+#### Ví dụ TDD cycle cho AddTransactionUseCase
+```dart
+// RED: viết test trước
+test('should_throw_when_amount_is_zero', () {
+  // Arrange
+  final useCase = AddTransactionUseCase(mockRepo);
+  // Act & Assert
+  expect(() => useCase.execute(amount: 0, ...), throwsA(isA<ValidationException>()));
+});
+
+// GREEN: viết đúng lượng code tối thiểu
+// REFACTOR: clean up naming / extract constant nếu cần
+```
 ### 4.1 Test Pyramid (MVP)
 - Ưu tiên theo thứ tự:
   1) **Unit tests (MUST)**: Domain (use-cases, entities, validators)
@@ -394,5 +448,12 @@ Tối thiểu 1–2 flow quan trọng:
   - tạo PR riêng (hoặc commit rõ ràng trong PR tính năng)
   - mô tả impact (có/không cần migrate, có/không thay AC)
   - sau khi merge mới được áp dụng vào spec/plan/tasks tiếp theo
+
+### Amendment Log
+
+| Version | Date | Type | Summary |
+|---|---|---|---|
+| 1.0.0 | 2025-12-18 | Initial | Ratified constitution |
+| 1.1.0 | 2026-03-30 | MINOR | Chốt kiến trúc Hybrid (§3.1 + §3.6); thêm TDD Workflow §4.0 |
 
 **End of Constitution**
