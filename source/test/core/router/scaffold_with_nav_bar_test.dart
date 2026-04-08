@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:so_thu_chi/core/router/scaffold_with_nav_bar.dart';
 import 'package:so_thu_chi/features/home/presentation/pages/home_page.dart';
 import 'package:so_thu_chi/features/settings/presentation/pages/settings_page.dart';
 import 'package:so_thu_chi/features/transaction/presentation/pages/add_transaction_page.dart';
+import 'package:so_thu_chi/l10n/app_localizations.dart';
 
 void main() {
   late GoRouter router;
@@ -59,17 +59,15 @@ void main() {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('vi'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('vi')],
       routerConfig: router,
     );
   }
 
   group('Navigation Shell Tests', () {
-    testWidgets('App launches to Home with selectedIndex 0',
-        (WidgetTester tester) async {
+    testWidgets('App launches to Home with selectedIndex 0', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
@@ -81,16 +79,19 @@ void main() {
       expect(navBar.selectedIndex, 0);
     });
 
-    testWidgets('Tap Settings tab navigates to Settings with selectedIndex 1',
-        (WidgetTester tester) async {
+    testWidgets('Tap Settings tab navigates to Settings with selectedIndex 1', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       // Find and tap Settings destination
-      final settingsDestination = find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byType(NavigationDestination),
-      ).at(1);
+      final settingsDestination = find
+          .descendant(
+            of: find.byType(NavigationBar),
+            matching: find.byType(NavigationDestination),
+          )
+          .at(1);
       await tester.tap(settingsDestination);
       await tester.pumpAndSettle();
 
@@ -102,24 +103,29 @@ void main() {
       expect(navBar.selectedIndex, 1);
     });
 
-    testWidgets('Tap Home tab navigates to Home with selectedIndex 0',
-        (WidgetTester tester) async {
+    testWidgets('Tap Home tab navigates to Home with selectedIndex 0', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       // First navigate to Settings
-      final settingsDestination = find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byType(NavigationDestination),
-      ).at(1);
+      final settingsDestination = find
+          .descendant(
+            of: find.byType(NavigationBar),
+            matching: find.byType(NavigationDestination),
+          )
+          .at(1);
       await tester.tap(settingsDestination);
       await tester.pumpAndSettle();
 
       // Then tap Home destination
-      final homeDestination = find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byType(NavigationDestination),
-      ).at(0);
+      final homeDestination = find
+          .descendant(
+            of: find.byType(NavigationBar),
+            matching: find.byType(NavigationDestination),
+          )
+          .at(0);
       await tester.tap(homeDestination);
       await tester.pumpAndSettle();
 
@@ -133,8 +139,9 @@ void main() {
   });
 
   group('FAB Navigation Tests', () {
-    testWidgets('From Home, tap FAB navigates to Add Transaction',
-        (WidgetTester tester) async {
+    testWidgets('From Home, tap FAB navigates to Add Transaction', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
@@ -149,16 +156,19 @@ void main() {
       expect(find.byKey(const Key('page_add_transaction')), findsOneWidget);
     });
 
-    testWidgets('From Settings, tap FAB navigates to Add Transaction',
-        (WidgetTester tester) async {
+    testWidgets('From Settings, tap FAB navigates to Add Transaction', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       // Navigate to Settings
-      final settingsDestination = find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byType(NavigationDestination),
-      ).at(1);
+      final settingsDestination = find
+          .descendant(
+            of: find.byType(NavigationBar),
+            matching: find.byType(NavigationDestination),
+          )
+          .at(1);
       await tester.tap(settingsDestination);
       await tester.pumpAndSettle();
 
@@ -175,8 +185,9 @@ void main() {
   });
 
   group('Return to Previous Tab Tests', () {
-    testWidgets('Home → FAB → back → returns to Home',
-        (WidgetTester tester) async {
+    testWidgets('Home → FAB → back → returns to Home', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
@@ -202,16 +213,19 @@ void main() {
       expect(navBar.selectedIndex, 0);
     });
 
-    testWidgets('Settings → FAB → back → returns to Settings',
-        (WidgetTester tester) async {
+    testWidgets('Settings → FAB → back → returns to Settings', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       // Navigate to Settings
-      final settingsDestination = find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byType(NavigationDestination),
-      ).at(1);
+      final settingsDestination = find
+          .descendant(
+            of: find.byType(NavigationBar),
+            matching: find.byType(NavigationDestination),
+          )
+          .at(1);
       await tester.tap(settingsDestination);
       await tester.pumpAndSettle();
 
@@ -247,16 +261,19 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
     });
 
-    testWidgets('NavigationBar visible on Settings',
-        (WidgetTester tester) async {
+    testWidgets('NavigationBar visible on Settings', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       // Navigate to Settings
-      final settingsDestination = find.descendant(
-        of: find.byType(NavigationBar),
-        matching: find.byType(NavigationDestination),
-      ).at(1);
+      final settingsDestination = find
+          .descendant(
+            of: find.byType(NavigationBar),
+            matching: find.byType(NavigationDestination),
+          )
+          .at(1);
       await tester.tap(settingsDestination);
       await tester.pumpAndSettle();
 
@@ -264,8 +281,9 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
     });
 
-    testWidgets('NavigationBar NOT visible on Add Transaction',
-        (WidgetTester tester) async {
+    testWidgets('NavigationBar NOT visible on Add Transaction', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
@@ -279,8 +297,9 @@ void main() {
   });
 
   group('Localization Tests', () {
-    testWidgets('English locale shows correct labels',
-        (WidgetTester tester) async {
+    testWidgets('English locale shows correct labels', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp(locale: const Locale('en')));
       await tester.pumpAndSettle();
 
@@ -289,18 +308,21 @@ void main() {
         of: find.byType(NavigationBar),
         matching: find.byType(NavigationDestination),
       );
-      
-      final homeDestination =
-          tester.widget<NavigationDestination>(destinations.at(0));
-      final settingsDestination =
-          tester.widget<NavigationDestination>(destinations.at(1));
+
+      final homeDestination = tester.widget<NavigationDestination>(
+        destinations.at(0),
+      );
+      final settingsDestination = tester.widget<NavigationDestination>(
+        destinations.at(1),
+      );
 
       expect(homeDestination.label, 'Home');
       expect(settingsDestination.label, 'Settings');
     });
 
-    testWidgets('Vietnamese locale shows correct labels',
-        (WidgetTester tester) async {
+    testWidgets('Vietnamese locale shows correct labels', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp(locale: const Locale('vi')));
       await tester.pumpAndSettle();
 
@@ -309,11 +331,13 @@ void main() {
         of: find.byType(NavigationBar),
         matching: find.byType(NavigationDestination),
       );
-      
-      final homeDestination =
-          tester.widget<NavigationDestination>(destinations.at(0));
-      final settingsDestination =
-          tester.widget<NavigationDestination>(destinations.at(1));
+
+      final homeDestination = tester.widget<NavigationDestination>(
+        destinations.at(0),
+      );
+      final settingsDestination = tester.widget<NavigationDestination>(
+        destinations.at(1),
+      );
 
       expect(homeDestination.label, 'Sổ giao dịch');
       expect(settingsDestination.label, 'Cài đặt');
@@ -321,8 +345,9 @@ void main() {
   });
 
   group('Accessibility Tests', () {
-    testWidgets('FAB has tooltip with localized text',
-        (WidgetTester tester) async {
+    testWidgets('FAB has tooltip with localized text', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
@@ -332,8 +357,9 @@ void main() {
       expect(fab.tooltip, 'Add Transaction');
     });
 
-    testWidgets('NavigationDestination widgets have non-empty labels',
-        (WidgetTester tester) async {
+    testWidgets('NavigationDestination widgets have non-empty labels', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
@@ -342,10 +368,12 @@ void main() {
         matching: find.byType(NavigationDestination),
       );
 
-      final homeDestination =
-          tester.widget<NavigationDestination>(destinations.at(0));
-      final settingsDestination =
-          tester.widget<NavigationDestination>(destinations.at(1));
+      final homeDestination = tester.widget<NavigationDestination>(
+        destinations.at(0),
+      );
+      final settingsDestination = tester.widget<NavigationDestination>(
+        destinations.at(1),
+      );
 
       expect(homeDestination.label, isNotEmpty);
       expect(settingsDestination.label, isNotEmpty);

@@ -1,5 +1,7 @@
 {
   "navHome": "Sổ giao dịch",
   "navSettings": "Cài đặt",
-  "fabAddTransaction": "Giao dịch mới"
+  "fabAddTransaction": "Giao dịch mới",
+  "settingsLanguage": "Ngôn ngữ",
+  "settingsCategories": "Quản lý thể loại"
 }

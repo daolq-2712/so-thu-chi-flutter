@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:so_thu_chi/core/router/scaffold_with_nav_bar.dart';
 import 'package:so_thu_chi/features/home/presentation/pages/home_page.dart';
+import 'package:so_thu_chi/features/settings/presentation/pages/categories_page.dart';
+import 'package:so_thu_chi/features/settings/presentation/pages/language_page.dart';
 import 'package:so_thu_chi/features/settings/presentation/pages/settings_page.dart';
 import 'package:so_thu_chi/features/transaction/presentation/pages/add_transaction_page.dart';
 
@@ -25,6 +27,16 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: '/settings',
               builder: (context, state) => const SettingsPage(),
+              routes: [
+                GoRoute(
+                  path: 'language',
+                  builder: (context, state) => const LanguagePage(),
+                ),
+                GoRoute(
+                  path: 'categories',
+                  builder: (context, state) => const CategoriesPage(),
+                ),
+              ],
             ),
           ],
         ),
